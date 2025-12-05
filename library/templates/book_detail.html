@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="book-detail">
+    <h2>{{ object.title }}</h2>
+    <p>👤 <strong>Autor:</strong> {{ object.author }}</p>
+    <p>📚 <strong>Género:</strong> {{ object.genre.name }}</p>
+    <p>📅 <strong>Año de Publicación:</strong> {{ object.publication_year }}</p>
+    
+    {% if object.available %}
+        <p style="color: #10b981; font-weight: bold; font-size: 1.1rem;">✓ Este libro está disponible para préstamo</p>
+        
+        <form method="post" action="{% url 'library:add_to_selection' object.slug %}" style="margin-top: 2.5rem;" id="add-to-cart-form">
+            {% csrf_token %}
+            <button type="button" class="success" onclick="addToCart(event)">🛒 Agregar a Selección</button>
+        </form>
+    {% else %}
+        <p style="color: #ef4444; font-weight: bold; font-size: 1.1rem;">✗ Este libro no está disponible en este momento</p>
+        
+        <button class="success" disabled style="opacity: 0.5; cursor: not-allowed; margin-top: 2.5rem;">🛒 No Disponible</button>
+    {% endif %}
+    
+    <a href="{% url 'library:book_list' %}" style="display: inline-block; margin-top: 2rem; color: #6366f1; text-decoration: none; font-weight: 600;">← Volver al Catálogo</a>
+</div>
+
+<script>
+function addToCart(event) {
+    event.preventDefault();
+    const form = document.getElementById('add-to-cart-form');
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    }).then(response => {
+        Swal.fire({
+            icon: 'success',
+            title: '¡Agregado!',
+            text: '{{ object.title }} ha sido agregado a tu selección',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        }).then(() => {
+            window.location.href = "{% url 'library:selection_detail' %}";
+        });
+    });
+}
+</script>
+{% endblock %}

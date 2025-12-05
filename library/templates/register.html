@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    header nav {
+        display: none !important;
+    }
+    .hamburger {
+        display: none !important;
+    }
+</style>
+
+<div class="form-container" style="max-width: 500px;">
+    <h2>📝 Crear Cuenta</h2>
+    
+    <form method="post" class="form-container-content">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">👤 Nombre de Usuario:</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <span class="form-error">{{ form.username.errors }}</span>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">📧 Correo Electrónico:</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <span class="form-error">{{ form.email.errors }}</span>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.password1.id_for_label }}">🔒 Contraseña:</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+                <span class="form-error">{{ form.password1.errors }}</span>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.password2.id_for_label }}">🔒 Confirmar Contraseña:</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+                <span class="form-error">{{ form.password2.errors }}</span>
+            {% endif %}
+        </div>
+        
+        <div class="form-buttons">
+            <button type="submit" class="btn">✅ Registrarse</button>
+            <a href="{% url 'library:login' %}" class="btn-secondary">← Cancelar</a>
+        </div>
+    </form>
+    
+    <p style="text-align: center; margin-top: 1.5rem; color: #64748b;">
+        ¿Ya tienes cuenta? <a href="{% url 'library:login' %}" style="color: var(--secondary-color); font-weight: 600;">Inicia sesión</a>
+    </p>
+</div>
+{% endblock %}

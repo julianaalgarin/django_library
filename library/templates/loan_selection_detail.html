@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="selection-container">
+    <h2>🛒 Mi Selección de Libros</h2>
+
+    {% if selection.items %}
+        <ul class="selection-list">
+        {% for item in selection.items.values %}
+            <li>
+                <div>
+                    <strong style="font-size: 1.1rem; color: var(--primary-color);">{{ item.title }}</strong>
+                    <p style="color: #64748b; margin: 0.5rem 0 0 0;">📦 Cantidad: <strong>{{ item.quantity }}</strong></p>
+                </div>
+                <form method="post" action="{% url 'library:remove_from_selection' item.book_id %}">
+                    {% csrf_token %}
+                    <button class="danger" type="submit">❌ Quitar</button>
+                </form>
+            </li>
+        {% endfor %}
+        </ul>
+
+        <div style="margin-top: 2.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="{% url 'library:create_loan' %}" style="flex: 1; min-width: 200px; display: inline-block; text-align: center; padding: 1.2rem 2rem; background: linear-gradient(135deg, var(--success-color), #059669); color: white; text-decoration: none; border-radius: 12px; font-weight: 700; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); transition: all 0.3s ease; font-size: 1.05rem;">
+                ✅ Proceder con el Préstamo
+            </a>
+            
+            <form method="post" action="{% url 'library:clear_selection' %}" style="flex: 1; min-width: 200px;">
+                {% csrf_token %}
+                <button class="danger" type="submit" style="width: 100%; padding: 1.2rem 2rem; font-size: 1.05rem;">🗑️ Vaciar Carrito</button>
+            </form>
+        </div>
+        
+        <a href="{% url 'library:book_list' %}" style="display: inline-block; margin-top: 2rem; color: #6366f1; text-decoration: none; font-weight: 600; font-size: 1.05rem;">
+            ← Continuar Explorando
+        </a>
+    {% else %}
+        <div class="empty-message">
+            <p style="font-size: 4rem; margin: 0;">🛒</p>
+            <p style="font-size: 1.3rem; color: #64748b; margin: 1rem 0;">Tu carrito está vacío</p>
+            <a href="{% url 'library:book_list' %}" style="display: inline-block; margin-top: 1.5rem; padding: 1rem 2rem; background: var(--secondary-color); color: white; text-decoration: none; border-radius: 10px; font-weight: 600;">
+                📖 Explorar Catálogo
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="success-message" style="text-align: center; max-width: 650px; margin: 4rem auto; background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 3rem; border-radius: 20px; box-shadow: 0 20px 60px rgba(16, 185, 129, 0.15); border: 2px solid #10b981;">
+    <div style="font-size: 5rem; margin-bottom: 1rem;">✅</div>
+    <h2 style="color: #059669; margin-bottom: 1.5rem; font-size: 2rem;">¡Préstamo Registrado Exitosamente!</h2>
+    
+    <div style="background: white; padding: 2rem; border-radius: 15px; margin: 2rem 0; text-align: left;">
+        <h3 style="color: var(--primary-color); margin-top: 0; font-size: 1.3rem;">📋 Detalles del Préstamo</h3>
+        <p style="margin: 0.8rem 0;"><strong style="color: var(--secondary-color);">👤 Lector:</strong> {{ loan.reader.name }}</p>
+        <p style="margin: 0.8rem 0;"><strong style="color: var(--secondary-color);">📧 Email:</strong> {{ loan.reader.email }}</p>
+        <p style="margin: 0.8rem 0;"><strong style="color: var(--secondary-color);">📅 Fecha:</strong> {{ loan.created_at|date:"d/m/Y" }}</p>
+        
+        <hr style="border: none; border-top: 2px solid #e2e8f0; margin: 1.5rem 0;">
+        
+        <h4 style="color: var(--primary-color); margin-bottom: 1rem;">📚 Libros Prestados:</h4>
+        <ul style="list-style: none; padding: 0;">
+            {% for item in loan.items.all %}
+                <li style="padding: 0.8rem; margin-bottom: 0.5rem; background: #f8fafc; border-radius: 8px; border-left: 3px solid var(--accent-color);">
+                    <strong>{{ item.book.title }}</strong>
+                    <span style="color: #64748b; display: block; margin-top: 0.3rem; font-size: 0.95rem;">por {{ item.book.author }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+        
+        <p style="font-weight: 700; color: var(--primary-color); margin-top: 1.5rem; font-size: 1.2rem;">
+            Total: {{ loan.items.count }} libro{{ loan.items.count|pluralize }}
+        </p>
+    </div>
+    
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+        <a href="{% url 'library:book_list' %}" style="display: inline-block; padding: 1rem 2.5rem; background: var(--secondary-color); color: white; text-decoration: none; border-radius: 12px; font-weight: 700; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">
+            📖 Volver al Catálogo
+        </a>
+    </div>
+</div>
+{% endblock %}

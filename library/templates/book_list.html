@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>📖 Nuestro Catálogo</h2>
+
+{% if object_list %}
+    <div class="book-grid">
+        {% for book in object_list %}
+            <div class="book-card">
+                <strong>{{ book.title }}</strong>
+                <p>👤 <strong>Autor:</strong> {{ book.author }}</p>
+                <p>📚 <strong>Género:</strong> {{ book.genre.name }}</p>
+                <p>📅 <strong>Año:</strong> {{ book.publication_year }}</p>
+                {% if book.available %}
+                    <p style="color: #10b981; font-weight: bold;">✓ Disponible</p>
+                {% else %}
+                    <p style="color: #ef4444; font-weight: bold;">✗ No disponible</p>
+                {% endif %}
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+                    <a href="{% url 'library:book_detail' book.slug %}" style="flex: 1; min-width: 100px; text-align: center;">Ver Detalles →</a>
+                    {% if user.is_superuser %}
+                        <button onclick="deleteBook('{{ book.slug }}', '{{ book.title }}')" class="danger" style="flex: 1; min-width: 100px; padding: 0.9rem 1.5rem; font-size: 0.9rem;">🗑️ Eliminar</button>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-message">
+        <p>📭</p>
+        <p>No hay libros disponibles en este momento.</p>
+        <a href="{% url 'library:book_list' %}">← Volver</a>
+    </div>
+{% endif %}
+
+<script>
+function deleteBook(slug, title) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: `¿Deseas eliminar "${title}" del catálogo?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/delete-book/${slug}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'El libro ha sido eliminado del catálogo',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo eliminar el libro'
+                    });
+                }
+            });
+        }
+    });
+}
+</script>
+{% endblock %}

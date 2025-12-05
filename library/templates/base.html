@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ system_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1400px; margin: 0 auto;">
+            <h1 style="margin: 0;">{{ system_name }}</h1>
+            
+            {% if user.is_authenticated %}
+                <span class="logout-link" onclick="confirmLogout();" style="margin-left: auto;">
+                    🚪 Salir ({{ user.username }})
+                </span>
+            {% endif %}
+        </div>
+
+        <button class="hamburger" id="hamburger" aria-label="Menú">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <nav id="nav-menu">
+            <a href="{% url 'library:book_list' %}">📚 Catálogo</a>
+            <a href="{% url 'library:selection_detail' %}">🛒 Selección</a>
+            
+            {% if user.is_superuser %}
+                <a href="{% url 'library:create_genre' %}">➕ Género</a>
+                <a href="{% url 'library:create_book' %}">➕ Libro</a>
+            {% endif %}
+            
+            {% if genres %}
+                <div class="genre-selector">
+                    <label for="genre-select">Géneros:</label>
+                    <select id="genre-select" onchange="if(this.value) window.location.href = this.value">
+                        <option value="">-- Seleccionar género --</option>
+                        {% for genre in genres %}
+                            <option value="{% url 'library:book_list_by_genre' genre.slug %}">{{ genre.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer style="text-align: center; padding: 2rem; color: #7f8c8d; margin-top: 3rem;">
+        <p>&copy; 2025 Biblioteca Pública. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Mostrar mensajes de Django con SweetAlert2 -->
+    {% if messages %}
+        <script>
+            {% for message in messages %}
+                Swal.fire({
+                    icon: '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% elif message.tags == "warning" %}warning{% else %}info{% endif %}',
+                    title: '{{ message }}',
+                    position: 'center',
+                    showConfirmButton: true,
+                    confirmButtonColor: '#6366f1',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            {% endfor %}
+        </script>
+    {% endif %}
+
+    <!-- Form oculto para logout -->
+    <form id="logout-form" method="post" action="{% url 'library:logout' %}" style="display: none;">
+        {% csrf_token %}
+    </form>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const navMenu = document.getElementById('nav-menu');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        // Cerrar menú al hacer clic en un enlace
+        document.querySelectorAll('#nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+            });
+        });
+
+        // Función para confirmar logout
+        function confirmLogout() {
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: '¿Estás seguro que deseas salir?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#6366f1',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sí, salir',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('logout-form').submit();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

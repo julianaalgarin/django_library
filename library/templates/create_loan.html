@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h2>📋 Confirmar Préstamo de Libros</h2>
+    
+    {% if selection.items %}
+        <div class="selection-summary" style="background: linear-gradient(135deg, #f0f4ff, #e0e7ff); padding: 2rem; border-radius: 15px; margin-bottom: 2.5rem; border-left: 5px solid var(--secondary-color);">
+            <h3 style="color: var(--primary-color); margin-top: 0; font-size: 1.4rem;">📚 Libros Seleccionados</h3>
+            <ul style="list-style: none; padding: 0;">
+                {% for book_id, item in selection.items.items %}
+                    <li style="padding: 1rem; margin-bottom: 0.5rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <strong style="color: var(--secondary-color); font-size: 1.1rem;">{{ item.title }}</strong>
+                        <p style="color: #64748b; margin: 0.5rem 0 0 0;">📦 Cantidad: {{ item.quantity }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+            <p style="font-weight: 700; color: var(--primary-color); margin-top: 1.5rem; font-size: 1.2rem;">
+                Total de libros: {{ selection.items|length }}
+            </p>
+        </div>
+
+        <form method="post" class="form-container-content">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">👤 Nombre Completo del Lector:</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <span class="form-error">{{ form.name.errors }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">📧 Correo Electrónico:</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <span class="form-error">{{ form.email.errors }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-buttons">
+                <button type="submit" class="btn">✅ Confirmar Préstamo</button>
+                <a href="{% url 'library:selection_detail' %}" class="btn-secondary">← Volver al Carrito</a>
+            </div>
+        </form>
+    {% else %}
+        <div class="empty-message">
+            <p style="font-size: 4rem; margin: 0;">🛒</p>
+            <p style="font-size: 1.3rem; color: #64748b;">No hay libros seleccionados</p>
+            <a href="{% url 'library:book_list' %}" style="display: inline-block; margin-top: 1.5rem; padding: 1rem 2rem; background: var(--secondary-color); color: white; text-decoration: none; border-radius: 10px; font-weight: 600;">← Volver al Catálogo</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

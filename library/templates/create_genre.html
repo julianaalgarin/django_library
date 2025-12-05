@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h2>➕ Crear Nuevo Género</h2>
+    
+    <form method="post" class="form-container-content">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">Nombre del Género:</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <span class="form-error">{{ form.name.errors }}</span>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.slug.id_for_label }}">URL Amigable (slug):</label>
+            {{ form.slug }}
+            {% if form.slug.errors %}
+                <span class="form-error">{{ form.slug.errors }}</span>
+            {% endif %}
+            <small style="color: #94a3b8; display: block; margin-top: 0.5rem;">
+                Ejemplo: "ciencia-ficcion", "novela-negra"
+            </small>
+        </div>
+        
+        <div class="form-buttons">
+            <button type="submit" class="btn">💾 Crear Género</button>
+            <a href="{% url 'library:book_list' %}" class="btn-secondary">← Cancelar</a>
+        </div>
+    </form>
+</div>
+
+{% if messages %}
+<script>
+{% for message in messages %}
+    Swal.fire({
+        icon: '{% if message.tags == "success" %}success{% else %}error{% endif %}',
+        title: '{{ message }}',
+        showConfirmButton: false,
+        timer: 2500,
+        timerProgressBar: true
+    });
+{% endfor %}
+</script>
+{% endif %}
+{% endblock %}
