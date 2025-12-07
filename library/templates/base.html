@@ -57,7 +57,7 @@
                 {% if user.is_authenticated %}
                     <div class="user-menu">
                         <span class="user-name">{{ user.username }}</span>
-                        <button class="btn-logout" onclick="confirmLogout();">Salir</button>
+                        <button class="btn-logout" onclick="confirmLogout()">Salir</button>
                     </div>
                 {% endif %}
                 
@@ -87,11 +87,11 @@
 
     <!-- Mostrar mensajes de Django con SweetAlert2 -->
     {% if messages %}
-        <script>
-            {% for message in messages %}
+        {% for message in messages %}
+            <script>
                 Swal.fire({
                     icon: '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% elif message.tags == "warning" %}warning{% else %}info{% endif %}',
-                    title: '{{ message }}',
+                    title: '{{ message|escapejs }}',
                     position: 'top-end',
                     showConfirmButton: false,
                     toast: true,
@@ -100,8 +100,8 @@
                     background: '#fff',
                     iconColor: '#6366f1'
                 });
-            {% endfor %}
-        </script>
+            </script>
+        {% endfor %}
     {% endif %}
 
     <!-- Form oculto para logout -->
