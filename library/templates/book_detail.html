@@ -8,19 +8,30 @@
     <p>📅 <strong>Año de Publicación:</strong> {{ object.publication_year }}</p>
     
     {% if object.available %}
-        <p style="color: #10b981; font-weight: bold; font-size: 1.1rem;">✓ Este libro está disponible para préstamo</p>
-        
-        <form method="post" action="{% url 'library:add_to_selection' object.slug %}" style="margin-top: 2.5rem;" id="add-to-cart-form">
-            {% csrf_token %}
-            <button type="button" class="success" onclick="addToCart(event)">🛒 Agregar a Selección</button>
-        </form>
+        <p style="color: #10b981; font-weight: 600; font-size: 1rem; margin-top: 1.5rem;">✓ Este libro está disponible para préstamo</p>
     {% else %}
-        <p style="color: #ef4444; font-weight: bold; font-size: 1.1rem;">✗ Este libro no está disponible en este momento</p>
-        
-        <button class="success" disabled style="opacity: 0.5; cursor: not-allowed; margin-top: 2.5rem;">🛒 No Disponible</button>
+        <p style="color: #ef4444; font-weight: 600; font-size: 1rem; margin-top: 1.5rem;">✗ Este libro no está disponible en este momento</p>
     {% endif %}
     
-    <a href="{% url 'library:book_list' %}" style="display: inline-block; margin-top: 2rem; color: #6366f1; text-decoration: none; font-weight: 600;">← Volver al Catálogo</a>
+    <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+        {% if object.available %}
+            <form method="post" action="{% url 'library:add_to_selection' object.slug %}" id="add-to-cart-form">
+                {% csrf_token %}
+                <button type="button" class="success" onclick="addToCart(event)">Agregar a Selección</button>
+            </form>
+        {% else %}
+            <button class="success" disabled style="opacity: 0.5; cursor: not-allowed;">No Disponible</button>
+        {% endif %}
+        
+        <a href="{% url 'library:book_list' %}" class="btn-secondary">Volver al Catálogo</a>
+        
+        {% if user.is_superuser %}
+            <form method="post" action="{% url 'library:delete_book' object.slug %}" onsubmit="return confirm('¿Estás seguro de eliminar este libro?');">
+                {% csrf_token %}
+                <button type="submit" class="danger">Eliminar</button>
+            </form>
+        {% endif %}
+    </div>
 </div>
 
 <script>

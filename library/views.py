@@ -156,7 +156,7 @@ class CreateGenreView(LoginRequiredMixin, CreateView):
         # Mostrar errores de validación como mensajes
         for field, errors in form.errors.items():
             for error in errors:
-                messages.error(self.request, error)
+                messages.error(self.request, str(error))
         return super().form_invalid(form)
 
 
@@ -187,7 +187,7 @@ class CreateBookView(LoginRequiredMixin, CreateView):
         # Mostrar errores de validación como mensajes
         for field, errors in form.errors.items():
             for error in errors:
-                messages.error(self.request, error)
+                messages.error(self.request, str(error))
         return super().form_invalid(form)
 
 
@@ -254,6 +254,54 @@ class LoanSuccessView(DetailView):
         return ctx
 
 
+class LoanListView(LoginRequiredMixin, ListView):
+    model = Loan
+    template_name = "loan_list.html"
+    context_object_name = "loans"
+    login_url = '/login/'
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            messages.error(request, 'No tienes permisos para ver préstamos')
+            return redirect('library:book_list')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        return Loan.objects.all().order_by('-created_at')
+    
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["genres"] = Genre.objects.all()
+        ctx["system_name"] = "Biblioteca Pública"
+        return ctx
+
+
+class ReturnLoanView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    
+    def post(self, request, loan_id):
+        if not request.user.is_superuser:
+            messages.error(request, 'No tienes permisos para marcar devoluciones')
+            return redirect('library:book_list')
+        
+        loan = get_object_or_404(Loan, id=loan_id)
+        
+        if loan.status == 'returned':
+            messages.warning(request, 'Este préstamo ya fue marcado como devuelto')
+        else:
+            # Marcar préstamo como devuelto
+            loan.mark_returned()
+            
+            # Marcar todos los libros como disponibles nuevamente
+            for item in loan.items.all():
+                item.book.available = True
+                item.book.save()
+            
+            messages.success(request, f'Préstamo devuelto exitosamente. Los libros están disponibles nuevamente.')
+        
+        return redirect('library:loan_list')
+
+
 # ELIMINAR LIBROS
 
 class DeleteBookView(LoginRequiredMixin, View):
@@ -265,8 +313,18 @@ class DeleteBookView(LoginRequiredMixin, View):
             return redirect('library:book_list')
         
         book = get_object_or_404(Book, slug=slug)
+        
+        active_loans = LoanItem.objects.filter(book=book, loan__status='active')
+        if active_loans.exists():
+            messages.error(request, f'No se puede eliminar "{book.title}" porque está en préstamos activos. Marca los préstamos como devueltos primero.')
+            return redirect('library:book_list')
+        
+        returned_loan_items = LoanItem.objects.filter(book=book, loan__status='returned')
+        returned_loan_items.delete()
+        
+        book_title = book.title
         book.delete()
-        messages.success(request, f'Libro "{book.title}" eliminado exitosamente')
+        messages.success(request, f'Libro "{book_title}" eliminado exitosamente')
         return redirect('library:book_list')
 
 
@@ -302,7 +360,7 @@ class RegisterView(CreateView):
     def form_invalid(self, form):
         for field, errors in form.errors.items():
             for error in errors:
-                messages.error(self.request, error)
+                messages.error(self.request, str(error))
         return super().form_invalid(form)
     
     def get_context_data(self, **kwargs):

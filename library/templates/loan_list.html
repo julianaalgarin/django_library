@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <h2>📋 Gestión de Préstamos</h2>
+
+    {% if loans %}
+        <div style="display: grid; gap: 1.5rem; margin-top: 2rem;">
+            {% for loan in loans %}
+                {% if loan.status == 'active' %}
+                    <div class="book-card" style="border-left: 4px solid #3b82f6;">
+                {% elif loan.status == 'returned' %}
+                    <div class="book-card" style="border-left: 4px solid #10b981;">
+                {% else %}
+                    <div class="book-card" style="border-left: 4px solid #f59e0b;">
+                {% endif %}
+                    <div style="display: flex; justify-content: space-between; align-items: start; gap: 2rem;">
+                        <div style="flex: 1;">
+                            <strong style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.125rem; margin-bottom: 1rem;">
+                                {% if loan.status == 'active' %}
+                                    🔵 Préstamo Activo
+                                {% elif loan.status == 'returned' %}
+                                    ✅ Devuelto
+                                {% else %}
+                                    ⚠️ Vencido
+                                {% endif %}
+                                <span style="font-size: 0.875rem; color: var(--text-secondary); font-weight: normal;">
+                                    #{{ loan.id }}
+                                </span>
+                            </strong>
+
+                            <p><strong>👤 Lector:</strong> {{ loan.reader.name }}</p>
+                            <p><strong>📧 Email:</strong> {{ loan.reader.email }}</p>
+                            <p><strong>📅 Fecha:</strong> {{ loan.created_at|date:"d/m/Y" }}</p>
+                            <p><strong>📚 Total libros:</strong> {{ loan.total_books }}</p>
+
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                                <strong style="display: block; margin-bottom: 0.5rem;">Libros prestados:</strong>
+                                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                                    {% for item in loan.items.all %}
+                                        <li style="padding: 0.5rem; background: var(--gray-50); border-radius: 0.5rem; font-size: 0.875rem;">
+                                            📖 {{ item.book.title }} - <em>{{ item.book.author }}</em> (Cantidad: {{ item.quantity }})
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            {% if loan.status == 'active' %}
+                                <form method="post" action="{% url 'library:return_loan' loan.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn success" style="white-space: nowrap;">
+                                        Marcar como Devuelto
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span style="padding: 0.75rem 1.5rem; background: var(--gray-100); color: var(--text-secondary); border-radius: 0.5rem; font-size: 0.875rem; text-align: center;">
+                                    Ya devuelto
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-message">
+            <p>No hay préstamos registrados</p>
+            <a href="{% url 'library:book_list' %}">Ir al catálogo</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

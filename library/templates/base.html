@@ -5,56 +5,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ system_name }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-    <header>
-        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1400px; margin: 0 auto;">
-            <h1 style="margin: 0;">{{ system_name }}</h1>
-            
-            {% if user.is_authenticated %}
-                <span class="logout-link" onclick="confirmLogout();" style="margin-left: auto;">
-                    🚪 Salir ({{ user.username }})
-                </span>
-            {% endif %}
+    <!-- Header estilo Astro -->
+    <header class="astro-header">
+        <div class="header-container">
+            <div class="header-left">
+                <a href="{% url 'library:book_list' %}" class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4L4 10V22L16 28L28 22V10L16 4Z" fill="url(#gradient)" stroke="currentColor" stroke-width="2"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="4" y1="4" x2="28" y2="28">
+                                <stop offset="0%" stop-color="#6366f1"/>
+                                <stop offset="100%" stop-color="#a855f7"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span class="logo-text">{{ system_name }}</span>
+                </a>
+            </div>
+
+            <nav class="header-nav" id="nav-menu">
+                <a href="{% url 'library:book_list' %}" class="nav-link">Inicio</a>
+                <a href="{% url 'library:book_list' %}" class="nav-link">Catálogo</a>
+                <a href="{% url 'library:selection_detail' %}" class="nav-link">Selección</a>
+                
+                {% if user.is_superuser %}
+                    <a href="{% url 'library:loan_list' %}" class="nav-link">Préstamos</a>
+                    <a href="{% url 'library:create_genre' %}" class="nav-link">Género</a>
+                    <a href="{% url 'library:create_book' %}" class="nav-link">Libro</a>
+                {% endif %}
+                
+                {% if genres %}
+                    <div class="nav-dropdown">
+                        <button class="nav-link dropdown-toggle">Géneros</button>
+                        <div class="dropdown-menu">
+                            {% for genre in genres %}
+                                <a href="{% url 'library:book_list_by_genre' genre.slug %}" class="dropdown-item">{{ genre.name }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </nav>
+
+            <div class="header-right">
+                {% if user.is_authenticated %}
+                    <div class="user-menu">
+                        <span class="user-name">{{ user.username }}</span>
+                        <button class="btn-logout" onclick="confirmLogout();">Salir</button>
+                    </div>
+                {% endif %}
+                
+                <button class="hamburger" id="hamburger" aria-label="Menú">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
         </div>
-
-        <button class="hamburger" id="hamburger" aria-label="Menú">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-
-        <nav id="nav-menu">
-            <a href="{% url 'library:book_list' %}">📚 Catálogo</a>
-            <a href="{% url 'library:selection_detail' %}">🛒 Selección</a>
-            
-            {% if user.is_superuser %}
-                <a href="{% url 'library:create_genre' %}">➕ Género</a>
-                <a href="{% url 'library:create_book' %}">➕ Libro</a>
-            {% endif %}
-            
-            {% if genres %}
-                <div class="genre-selector">
-                    <label for="genre-select">Géneros:</label>
-                    <select id="genre-select" onchange="if(this.value) window.location.href = this.value">
-                        <option value="">-- Seleccionar género --</option>
-                        {% for genre in genres %}
-                            <option value="{% url 'library:book_list_by_genre' genre.slug %}">{{ genre.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            {% endif %}
-        </nav>
     </header>
 
     <main>
         {% block content %}{% endblock %}
     </main>
 
-    <footer style="text-align: center; padding: 2rem; color: #7f8c8d; margin-top: 3rem;">
-        <p>&copy; 2025 Biblioteca Pública. Todos los derechos reservados.</p>
+    <footer class="astro-footer">
+        <div class="footer-container">
+            <p>&copy; 2025 Biblioteca Pública. Todos los derechos reservados.</p>
+            <div class="footer-links">
+                <a href="#">Términos</a>
+                <a href="#">Privacidad</a>
+                <a href="#">Contacto</a>
+            </div>
+        </div>
     </footer>
 
     <!-- Mostrar mensajes de Django con SweetAlert2 -->
@@ -64,11 +92,13 @@
                 Swal.fire({
                     icon: '{% if message.tags == "success" %}success{% elif message.tags == "error" %}error{% elif message.tags == "warning" %}warning{% else %}info{% endif %}',
                     title: '{{ message }}',
-                    position: 'center',
-                    showConfirmButton: true,
-                    confirmButtonColor: '#6366f1',
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    toast: true,
                     timer: 3000,
-                    timerProgressBar: true
+                    timerProgressBar: true,
+                    background: '#fff',
+                    iconColor: '#6366f1'
                 });
             {% endfor %}
         </script>
@@ -86,14 +116,34 @@
         hamburger.addEventListener('click', () => {
             hamburger.classList.toggle('active');
             navMenu.classList.toggle('active');
+            document.body.classList.toggle('menu-open');
         });
 
         // Cerrar menú al hacer clic en un enlace
-        document.querySelectorAll('#nav-menu a').forEach(link => {
+        document.querySelectorAll('#nav-menu a, #nav-menu .dropdown-item').forEach(link => {
             link.addEventListener('click', () => {
                 hamburger.classList.remove('active');
                 navMenu.classList.remove('active');
+                document.body.classList.remove('menu-open');
             });
+        });
+
+        // Dropdown functionality
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const dropdown = toggle.closest('.nav-dropdown');
+                dropdown.classList.toggle('active');
+            });
+        });
+
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-dropdown')) {
+                document.querySelectorAll('.nav-dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('active');
+                });
+            }
         });
 
         // Función para confirmar logout

@@ -17,9 +17,9 @@
                     <p style="color: #ef4444; font-weight: bold;">✗ No disponible</p>
                 {% endif %}
                 <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
-                    <a href="{% url 'library:book_detail' book.slug %}" style="flex: 1; min-width: 100px; text-align: center;">Ver Detalles →</a>
+                    <a href="{% url 'library:book_detail' book.slug %}" style="flex: 1; min-width: 120px; text-align: center;">Ver Detalles</a>
                     {% if user.is_superuser %}
-                        <button onclick="deleteBook('{{ book.slug }}', '{{ book.title }}')" class="danger" style="flex: 1; min-width: 100px; padding: 0.9rem 1.5rem; font-size: 0.9rem;">🗑️ Eliminar</button>
+                        <button onclick="deleteBook('{{ book.slug }}', '{{ book.title }}')" class="danger" style="flex: 1; min-width: 120px;">Eliminar</button>
                     {% endif %}
                 </div>
             </div>
